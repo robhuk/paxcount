@@ -96,6 +96,14 @@ select#setType{padding:7px!important;font-size:14px!important;border-radius:9px!
  .journey-fields-three{grid-template-columns:1fr 1fr!important}
 }
 
+
+/* Saved report actions */
+.report-actions{display:flex;gap:7px;margin:10px 0 4px}
+.report-btn{border:0;border-radius:10px;padding:9px 11px;font-weight:900;cursor:pointer;font-size:13px;background:#10202b;color:#fff}
+.report-btn.email{background:#c91518}
+.delete-entry{border:0;background:#fff;color:#c91518;font-size:24px;font-weight:900;line-height:1;width:34px;height:34px;border-radius:50%;cursor:pointer;flex:0 0 auto}
+.delete-entry:active{transform:scale(.94)}
+
 </style>
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -157,19 +165,90 @@ function save(){const now=new Date();const selectedDate=$('countDate').value||to
 const currentHeadcode=$('headcode').value.trim().toUpperCase();
 $('headcode').value=currentHeadcode;
 if(currentHeadcode)localStorage.setItem(HEADC0DE_KEY,currentHeadcode);
-let r={headcode:$('headcode').value.trim().toUpperCase(),station:$('station').value.trim(),setType:$('setType').value,first:state.first,standard:state.standard,total:state.first+state.standard,notes:$('notes').value.trim(),date:now.toLocaleString(),dateKey:selectedDate};let a=records();a.unshift(r);localStorage.setItem('pc_v2',JSON.stringify(a));$('message').textContent='✓ Saved offline on this device';history()}
+let r={id:`pc_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,headcode:$('headcode').value.trim().toUpperCase(),station:$('station').value.trim(),setType:$('setType').value,first:state.first,standard:state.standard,total:state.first+state.standard,notes:$('notes').value.trim(),date:now.toLocaleString(),dateKey:selectedDate};let a=records();a.unshift(r);localStorage.setItem('pc_v2',JSON.stringify(a));$('message').textContent='✓ Saved offline on this device';history()}
 function clearForm(){if(confirm('Clear the current count?')){state.first=state.standard=0;$('headcode').value='';localStorage.removeItem(HEADC0DE_KEY);$('station').value='';$('setType').value='Single set';$('notes').value='';$('message').textContent='Current count cleared';render()}}
+function esc(v){
+  return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function deleteEntry(id){
+  if(!confirm('Delete this saved passenger count?')) return;
+  let a=records();
+  a=a.filter(r=>r.id!==id);
+  localStorage.setItem('pc_v2',JSON.stringify(a));
+  history();
+}
+function groupById(groupId){
+  const a=records();
+  const g=groupId.split('|');
+  return a.filter(r=>{
+    const day=r.dateKey || String(r.date||'').replace(/,.*/, '');
+    const head=(r.headcode||'NO HEADC0DE').trim().toUpperCase();
+    return day===g[0] && head===g[1];
+  });
+}
+function emailGroup(groupId){
+  const items=groupById(groupId);
+  if(!items.length) return;
+  const first=items[0];
+  const totalFirst=items.reduce((n,r)=>n+(Number(r.first)||0),0);
+  const totalStandard=items.reduce((n,r)=>n+(Number(r.standard)||0),0);
+  const total=items.reduce((n,r)=>n+(Number(r.total)||0),0);
+  const dateLabel=first.dateKey || first.date || '';
+  const subject=`Passenger Counts - ${first.headcode||'Service'} - ${dateLabel}`;
+  const lines=[
+    `Passenger Counts`,
+    `Headcode: ${first.headcode||''}`,
+    `Date: ${dateLabel}`,
+    '',
+    `First Class: ${totalFirst}`,
+    `Standard Class: ${totalStandard}`,
+    `Total Passengers: ${total}`,
+    '',
+    'Individual counts:'
+  ];
+  items.forEach(r=>{
+    lines.push(`${r.station||'Station not entered'} — ${r.setType||'Single set'} — First: ${r.first} | Standard: ${r.standard} | Total: ${r.total}${r.notes?' | Notes: '+r.notes:''}`);
+  });
+  window.location.href='mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
+}
+function pdfGroup(groupId){
+  const items=groupById(groupId);
+  if(!items.length) return;
+  const first=items[0];
+  const totalFirst=items.reduce((n,r)=>n+(Number(r.first)||0),0);
+  const totalStandard=items.reduce((n,r)=>n+(Number(r.standard)||0),0);
+  const total=items.reduce((n,r)=>n+(Number(r.total)||0),0);
+  const dateLabel=first.dateKey
+    ? new Date(first.dateKey+'T12:00:00').toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+    : esc(first.date||'');
+  const rows=items.map(r=>`<tr><td>${esc(r.station||'Station not entered')}</td><td>${esc(r.setType||'Single set')}</td><td>${Number(r.first)||0}</td><td>${Number(r.standard)||0}</td><td><b>${Number(r.total)||0}</b></td><td>${esc(r.notes||'')}</td></tr>`).join('');
+  const w=window.open('','_blank','width=900,height=700');
+  if(!w){alert('Please allow pop-ups to create the PDF.');return;}
+  w.document.write(`<!doctype html><html><head><title>Passenger Counts - ${esc(first.headcode||'Service')}</title><style>
+    body{font-family:Arial,sans-serif;padding:28px;color:#14202a}h1{margin:0;color:#c91518}.meta{margin:8px 0 20px;font-weight:bold}.totals{display:flex;gap:10px;margin:16px 0}.total{border:1px solid #ddd;border-radius:8px;padding:12px;min-width:150px}.num{font-size:24px;font-weight:bold}table{width:100%;border-collapse:collapse;margin-top:18px}th,td{border:1px solid #ddd;padding:9px;text-align:left}th{background:#10202b;color:#fff}@media print{body{padding:0}}
+  </style></head><body>
+  <h1>Passenger Counts</h1>
+  <div class="meta">Headcode: ${esc(first.headcode||'')}<br>Date: ${dateLabel}</div>
+  <div class="totals"><div class="total">First Class<div class="num">${totalFirst}</div></div><div class="total">Standard Class<div class="num">${totalStandard}</div></div><div class="total">Total Passengers<div class="num">${total}</div></div></div>
+  <table><thead><tr><th>Station</th><th>Formation</th><th>First</th><th>Standard</th><th>Total</th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table>
+  <script>window.onload=()=>window.print();<\/script></body></html>`);
+  w.document.close();
+}
 function history(){
 let a=records(),h=$('history');
 if(!a.length){h.innerHTML='<div class="record">No saved passenger counts yet.</div>';return}
 const groups=new Map();
-a.forEach(r=>{
+a.forEach((r,index)=>{
+  // Backward compatibility: give older saved records an ID the first time they are rendered.
+  if(!r.id) r.id='legacy_'+index+'_'+String(r.date||'').replace(/\W/g,'');
   const day=r.dateKey || String(r.date||'').replace(/,.*/, '');
   const head=(r.headcode||'NO HEADC0DE').trim().toUpperCase();
-  const key=day+'|'+head; // Same selected date + same headcode = one report group
-  if(!groups.has(key)) groups.set(key,{day,head,items:[]});
+  const key=day+'|'+head;
+  if(!groups.has(key)) groups.set(key,{key,day,head,items:[]});
   groups.get(key).items.push(r);
 });
+localStorage.setItem('pc_v2',JSON.stringify(a));
+
 h.innerHTML=[...groups.values()].map(g=>{
   const totalFirst=g.items.reduce((n,r)=>n+(Number(r.first)||0),0);
   const totalStandard=g.items.reduce((n,r)=>n+(Number(r.standard)||0),0);
@@ -177,21 +256,27 @@ h.innerHTML=[...groups.values()].map(g=>{
   const dateLabel=g.items[0].dateKey
     ? new Date(g.items[0].dateKey+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short',year:'numeric'})
     : String(g.items[0].date||'').replace(/,.*/, '');
+  const safeKey=encodeURIComponent(g.key);
   return `<div class="record" style="border:2px solid #c91518">
-    <b>🚆 ${g.head}</b>
-    <div class="note" style="font-weight:800;margin:5px 0 10px">${dateLabel} • ${g.items.length} count${g.items.length===1?'':'s'}</div>
+    <b>🚆 ${esc(g.head)}</b>
+    <div class="note" style="font-weight:800;margin:5px 0 10px">${esc(dateLabel)} • ${g.items.length} count${g.items.length===1?'':'s'}</div>
     <div class="row" style="padding:9px;border-radius:10px;background:#f2f4f5">
       <span>First Class: <span class="fc">${totalFirst}</span></span>
       <span>Standard: <span class="std">${totalStandard}</span></span>
       <span>Total: <b>${totalPassengers}</b></span>
     </div>
-    <div style="margin-top:10px">
+    <div class="report-actions">
+      <button class="report-btn" onclick="pdfGroup(decodeURIComponent('${safeKey}'))">📄 PDF</button>
+      <button class="report-btn email" onclick="emailGroup(decodeURIComponent('${safeKey}'))">✉️ Email</button>
+    </div>
+    <div style="margin-top:6px">
       ${g.items.map(r=>`<div style="padding:9px 0;border-top:1px solid #e1e5e7">
-        <div class="row">
-          <span><b>${r.station ? '📍 '+r.station : '📍 Station not entered'}</b><div class="note">🚆 ${r.setType || 'Single set'}</div></span>
-          <span>First: <span class="fc">${r.first}</span> • Standard: <span class="std">${r.standard}</span> • Total: <b>${r.total}</b></span>
+        <div class="row" style="gap:8px">
+          <span style="min-width:0"><b>${r.station ? '📍 '+esc(r.station) : '📍 Station not entered'}</b><div class="note">🚆 ${esc(r.setType || 'Single set')}</div></span>
+          <button class="delete-entry" title="Delete this entry" aria-label="Delete this saved count" onclick="deleteEntry('${esc(r.id)}')">×</button>
         </div>
-        ${r.notes?`<div class="note">Notes: ${r.notes}</div>`:''}
+        <div class="note">First: <span class="fc">${Number(r.first)||0}</span> • Standard: <span class="std">${Number(r.standard)||0}</span> • Total: <b>${Number(r.total)||0}</b></div>
+        ${r.notes?`<div class="note">Notes: ${esc(r.notes)}</div>`:''}
       </div>`).join('')}
     </div>
   </div>`;
@@ -200,8 +285,20 @@ h.innerHTML=[...groups.values()].map(g=>{
 document.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{let k=b.dataset.k;state[k]=Math.max(0,state[k]+Number(b.dataset.d));render()});
 ['first','standard'].forEach(k=>$(k).addEventListener('input',()=>{let n=parseInt($(k).value,10);state[k]=Number.isFinite(n)&&n>=0?n:0;updateTotal();}));
 ['first','standard'].forEach(k=>$(k).addEventListener('blur',()=>{if($(k).value==='')state[k]=0;render();}));
-$('saveTop').onclick=save;$('saveBottom').onclick=save;$('clearTop').onclick=clearForm;
-function tab(which){let count=which==='count';$('countView').classList.toggle('hidden',!count);$('savedView').classList.toggle('hidden',count);$('countTab').classList.toggle('active',count);$('savedTab').classList.toggle('active',!count);if(!count)history()}
+$('saveTop').onclick=save;$('saveBottom').onclick=save;$('clearTop').onclick=()=>{
+  if(!confirm('Clear ALL saved passenger count records? This cannot be undone.')) return;
+  localStorage.removeItem('pc_v2');
+  state.first=state.standard=0;
+  $('headcode').value='';
+  localStorage.removeItem(HEADC0DE_KEY);
+  $('station').value='';
+  $('setType').value='Single set';
+  $('notes').value='';
+  if($('countDate')) $('countDate').value=todayLocal();
+  $('message').textContent='All passenger count records cleared';
+  render();
+  history();
+}
 $('countTab').onclick=()=>tab('count');$('savedTab').onclick=()=>tab('saved');
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');if(!$('countDate').value)$('countDate').value=todayLocal();render();history();
 
