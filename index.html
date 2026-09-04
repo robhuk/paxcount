@@ -86,6 +86,16 @@ select#setType{padding:7px!important;font-size:14px!important;border-radius:9px!
  .savebar{padding:8px!important}
 }
 
+
+.journey-fields-three{grid-template-columns:1fr 1fr 1fr!important}
+@media(max-width:520px){
+ .journey-fields-three{grid-template-columns:1fr 1fr!important}
+ .journey-fields-three>div:last-child{grid-column:1/-1}
+}
+@media(max-width:420px){
+ .journey-fields-three{grid-template-columns:1fr 1fr!important}
+}
+
 </style>
 </head>
 <body><div class="app">
@@ -95,7 +105,7 @@ select#setType{padding:7px!important;font-size:14px!important;border-radius:9px!
 <section id="countView">
 <div class="hero"><div class="cloud c1"></div><div class="cloud c2"></div><div class="clock"></div><div class="train"></div></div>
 <div class="page">
-<div class="journey-fields" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+<div class="journey-fields journey-fields-three" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
 <div>
 <label for="headcode" style="display:block;font-size:17px;font-weight:900;margin:0 0 8px">🚆 Headcode</label>
 <input id="headcode" placeholder="e.g. 1V50" style="width:100%;border:1px solid #d8dde0;border-radius:14px;padding:14px;font-size:20px;font-weight:800;text-transform:uppercase">
@@ -103,6 +113,10 @@ select#setType{padding:7px!important;font-size:14px!important;border-radius:9px!
 <div>
 <label for="station" style="display:block;font-size:17px;font-weight:900;margin:0 0 8px">📍 Station</label>
 <input id="station" placeholder="e.g. Newcastle" style="width:100%;border:1px solid #d8dde0;border-radius:14px;padding:14px;font-size:16px;font-weight:700">
+</div>
+<div>
+<label for="countDate" style="display:block;font-size:17px;font-weight:900;margin:0 0 8px">📅 Date</label>
+<input id="countDate" type="date" style="width:100%;border:1px solid #d8dde0;border-radius:14px;padding:14px;font-size:14px;font-weight:700;background:white;color:#14202a">
 </div>
 </div>
 <div style="margin-bottom:14px">
@@ -127,11 +141,12 @@ select#setType{padding:7px!important;font-size:14px!important;border-radius:9px!
 </div>
 <script>
 const state={first:0,standard:0};const $=x=>document.getElementById(x);
+const todayLocal=()=>{const d=new Date();const off=d.getTimezoneOffset()*60000;return new Date(d-off).toISOString().slice(0,10)};
 const CLASS220_CAPACITY=200;
 function updateTotal(){const total=state.first+state.standard;const pct=Math.round((total/CLASS220_CAPACITY)*100);const el=$('total');el.textContent=total;el.classList.remove('load-low','load-medium','load-high');if(pct<60)el.classList.add('load-low');else if(pct<90)el.classList.add('load-medium');else el.classList.add('load-high');$('loadInfo').textContent=`${pct}% of Class 220 seating capacity`;}
 function render(){$('first').value=state.first;$('standard').value=state.standard;updateTotal()}
 function records(){return JSON.parse(localStorage.getItem('pc_v2')||'[]')}
-function save(){const now=new Date();let r={headcode:$('headcode').value.trim().toUpperCase(),station:$('station').value.trim(),setType:$('setType').value,first:state.first,standard:state.standard,total:state.first+state.standard,notes:$('notes').value.trim(),date:now.toLocaleString(),dateKey:now.toISOString().slice(0,10)};let a=records();a.unshift(r);localStorage.setItem('pc_v2',JSON.stringify(a));$('message').textContent='✓ Saved offline on this device';history()}
+function save(){const now=new Date();const selectedDate=$('countDate').value||todayLocal();let r={headcode:$('headcode').value.trim().toUpperCase(),station:$('station').value.trim(),setType:$('setType').value,first:state.first,standard:state.standard,total:state.first+state.standard,notes:$('notes').value.trim(),date:now.toLocaleString(),dateKey:selectedDate};let a=records();a.unshift(r);localStorage.setItem('pc_v2',JSON.stringify(a));$('message').textContent='✓ Saved offline on this device';history()}
 function clearForm(){if(confirm('Clear the current count?')){state.first=state.standard=0;$('headcode').value='';$('station').value='';$('setType').value='Single set';$('notes').value='';$('message').textContent='Current count cleared';render()}}
 function history(){
 let a=records(),h=$('history');
@@ -140,7 +155,7 @@ const groups=new Map();
 a.forEach(r=>{
   const day=r.dateKey || String(r.date||'').replace(/,.*/, '');
   const head=(r.headcode||'NO HEADC0DE').trim().toUpperCase();
-  const key=day+'|'+head;
+  const key=day+'|'+head; // Same selected date + same headcode = one report group
   if(!groups.has(key)) groups.set(key,{day,head,items:[]});
   groups.get(key).items.push(r);
 });
@@ -177,6 +192,6 @@ document.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{let k=b.dataset.
 $('saveTop').onclick=save;$('saveBottom').onclick=save;$('clearTop').onclick=clearForm;
 function tab(which){let count=which==='count';$('countView').classList.toggle('hidden',!count);$('savedView').classList.toggle('hidden',count);$('countTab').classList.toggle('active',count);$('savedTab').classList.toggle('active',!count);if(!count)history()}
 $('countTab').onclick=()=>tab('count');$('savedTab').onclick=()=>tab('saved');
-if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');render();history();
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');if(!$('countDate').value)$('countDate').value=todayLocal();render();history();
 
 </script></body></html>
