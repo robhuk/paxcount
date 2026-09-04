@@ -104,6 +104,46 @@ select#setType{padding:7px!important;font-size:14px!important;border-radius:9px!
 .delete-entry{border:0;background:#fff;color:#c91518;font-size:24px;font-weight:900;line-height:1;width:34px;height:34px;border-radius:50%;cursor:pointer;flex:0 0 auto}
 .delete-entry:active{transform:scale(.94)}
 
+
+/* Responsive screen adaptation */
+html,body{width:100%;max-width:100%;margin:0;overflow-x:hidden}
+*{box-sizing:border-box}
+.app{width:100%;max-width:760px;margin:0 auto;min-height:100dvh}
+.page{width:100%;max-width:100%}
+input,select,textarea,button{max-width:100%}
+.row{flex-wrap:wrap}
+.record{width:100%;max-width:100%;overflow-wrap:anywhere}
+
+/* Phones */
+@media(max-width:480px){
+  .app{max-width:none}
+  .page{padding-left:10px!important;padding-right:10px!important}
+  .journey-fields,.journey-fields-three{grid-template-columns:1fr 1fr!important}
+  .journey-fields-three>div:last-child{grid-column:1/-1}
+  .report-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .report-btn{width:100%;min-height:42px}
+  .record .row{align-items:center}
+}
+
+/* Very narrow phones */
+@media(max-width:340px){
+  .journey-fields,.journey-fields-three{grid-template-columns:1fr!important}
+  .journey-fields-three>div:last-child{grid-column:auto}
+  .actions{gap:4px}
+  .action{width:43px!important}
+  .report-actions{grid-template-columns:1fr}
+}
+
+/* Tablets and larger screens */
+@media(min-width:481px){
+  .page{padding-left:16px!important;padding-right:16px!important}
+  .journey-fields-three{grid-template-columns:1fr 1fr 1fr!important}
+}
+
+/* Allow Saved screen to scroll independently without breaking the app layout */
+#savedView{width:100%;max-width:100%}
+#savedView .page{overflow-y:auto;-webkit-overflow-scrolling:touch}
+
 </style>
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -226,7 +266,47 @@ function pdfGroup(groupId){
   if(!w){alert('Please allow pop-ups to create the PDF.');return;}
   w.document.write(`<!doctype html><html><head><title>Passenger Counts - ${esc(first.headcode||'Service')}</title><style>
     body{font-family:Arial,sans-serif;padding:28px;color:#14202a}h1{margin:0;color:#c91518}.meta{margin:8px 0 20px;font-weight:bold}.totals{display:flex;gap:10px;margin:16px 0}.total{border:1px solid #ddd;border-radius:8px;padding:12px;min-width:150px}.num{font-size:24px;font-weight:bold}table{width:100%;border-collapse:collapse;margin-top:18px}th,td{border:1px solid #ddd;padding:9px;text-align:left}th{background:#10202b;color:#fff}@media print{body{padding:0}}
-  </style></head><body>
+  
+/* Responsive screen adaptation */
+html,body{width:100%;max-width:100%;margin:0;overflow-x:hidden}
+*{box-sizing:border-box}
+.app{width:100%;max-width:760px;margin:0 auto;min-height:100dvh}
+.page{width:100%;max-width:100%}
+input,select,textarea,button{max-width:100%}
+.row{flex-wrap:wrap}
+.record{width:100%;max-width:100%;overflow-wrap:anywhere}
+
+/* Phones */
+@media(max-width:480px){
+  .app{max-width:none}
+  .page{padding-left:10px!important;padding-right:10px!important}
+  .journey-fields,.journey-fields-three{grid-template-columns:1fr 1fr!important}
+  .journey-fields-three>div:last-child{grid-column:1/-1}
+  .report-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .report-btn{width:100%;min-height:42px}
+  .record .row{align-items:center}
+}
+
+/* Very narrow phones */
+@media(max-width:340px){
+  .journey-fields,.journey-fields-three{grid-template-columns:1fr!important}
+  .journey-fields-three>div:last-child{grid-column:auto}
+  .actions{gap:4px}
+  .action{width:43px!important}
+  .report-actions{grid-template-columns:1fr}
+}
+
+/* Tablets and larger screens */
+@media(min-width:481px){
+  .page{padding-left:16px!important;padding-right:16px!important}
+  .journey-fields-three{grid-template-columns:1fr 1fr 1fr!important}
+}
+
+/* Allow Saved screen to scroll independently without breaking the app layout */
+#savedView{width:100%;max-width:100%}
+#savedView .page{overflow-y:auto;-webkit-overflow-scrolling:touch}
+
+</style></head><body>
   <h1>Passenger Counts</h1>
   <div class="meta">Headcode: ${esc(first.headcode||'')}<br>Date: ${dateLabel}</div>
   <div class="totals"><div class="total">First Class<div class="num">${totalFirst}</div></div><div class="total">Standard Class<div class="num">${totalStandard}</div></div><div class="total">Total Passengers<div class="num">${total}</div></div></div>
@@ -266,8 +346,8 @@ h.innerHTML=[...groups.values()].map(g=>{
       <span>Total: <b>${totalPassengers}</b></span>
     </div>
     <div class="report-actions">
-      <button class="report-btn" onclick="pdfGroup(decodeURIComponent('${safeKey}'))">📄 PDF</button>
-      <button class="report-btn email" onclick="emailGroup(decodeURIComponent('${safeKey}'))">✉️ Email</button>
+      <button class="report-btn" onclick="pdfGroup(decodeURIComponent('${safeKey}'))" title="Export this group as a PDF">📄 Export PDF</button>
+      <button class="report-btn email" onclick="emailGroup(decodeURIComponent('${safeKey}'))" title="Export this group by email">✉️ Export Email</button>
     </div>
     <div style="margin-top:6px">
       ${g.items.map(r=>`<div style="padding:9px 0;border-top:1px solid #e1e5e7">
