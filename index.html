@@ -141,13 +141,22 @@ select#setType{padding:7px!important;font-size:14px!important;border-radius:9px!
 </div>
 <script>
 const state={first:0,standard:0};const $=x=>document.getElementById(x);
+const HEADC0DE_KEY='passengerCountsCurrentHeadcode';
+const savedHeadcode=localStorage.getItem(HEADC0DE_KEY)||'';
+if(savedHeadcode){$('headcode').value=savedHeadcode;}
+$('headcode').addEventListener('input',()=>localStorage.setItem(HEADC0DE_KEY,$('headcode').value.trim().toUpperCase()));
+$('headcode').addEventListener('change',()=>{const h=$('headcode').value.trim().toUpperCase();$('headcode').value=h;if(h)localStorage.setItem(HEADC0DE_KEY,h);else localStorage.removeItem(HEADC0DE_KEY);});
 const todayLocal=()=>{const d=new Date();const off=d.getTimezoneOffset()*60000;return new Date(d-off).toISOString().slice(0,10)};
 const CLASS220_CAPACITY=200;
 function updateTotal(){const total=state.first+state.standard;const pct=Math.round((total/CLASS220_CAPACITY)*100);const el=$('total');el.textContent=total;el.classList.remove('load-low','load-medium','load-high');if(pct<60)el.classList.add('load-low');else if(pct<90)el.classList.add('load-medium');else el.classList.add('load-high');$('loadInfo').textContent=`${pct}% of Class 220 seating capacity`;}
 function render(){$('first').value=state.first;$('standard').value=state.standard;updateTotal()}
 function records(){return JSON.parse(localStorage.getItem('pc_v2')||'[]')}
-function save(){const now=new Date();const selectedDate=$('countDate').value||todayLocal();let r={headcode:$('headcode').value.trim().toUpperCase(),station:$('station').value.trim(),setType:$('setType').value,first:state.first,standard:state.standard,total:state.first+state.standard,notes:$('notes').value.trim(),date:now.toLocaleString(),dateKey:selectedDate};let a=records();a.unshift(r);localStorage.setItem('pc_v2',JSON.stringify(a));$('message').textContent='✓ Saved offline on this device';history()}
-function clearForm(){if(confirm('Clear the current count?')){state.first=state.standard=0;$('headcode').value='';$('station').value='';$('setType').value='Single set';$('notes').value='';$('message').textContent='Current count cleared';render()}}
+function save(){const now=new Date();const selectedDate=$('countDate').value||todayLocal();
+const currentHeadcode=$('headcode').value.trim().toUpperCase();
+$('headcode').value=currentHeadcode;
+if(currentHeadcode)localStorage.setItem(HEADC0DE_KEY,currentHeadcode);
+let r={headcode:$('headcode').value.trim().toUpperCase(),station:$('station').value.trim(),setType:$('setType').value,first:state.first,standard:state.standard,total:state.first+state.standard,notes:$('notes').value.trim(),date:now.toLocaleString(),dateKey:selectedDate};let a=records();a.unshift(r);localStorage.setItem('pc_v2',JSON.stringify(a));$('message').textContent='✓ Saved offline on this device';history()}
+function clearForm(){if(confirm('Clear the current count?')){state.first=state.standard=0;$('headcode').value='';localStorage.removeItem(HEADC0DE_KEY);$('station').value='';$('setType').value='Single set';$('notes').value='';$('message').textContent='Current count cleared';render()}}
 function history(){
 let a=records(),h=$('history');
 if(!a.length){h.innerHTML='<div class="record">No saved passenger counts yet.</div>';return}
