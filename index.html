@@ -27,7 +27,7 @@ header{background:linear-gradient(135deg,#dc201f,#ae1015);color:white;padding:14
 </style>
 </head>
 <body><div class="app">
-<header><div class="head"><div class="brand">Passenger Counts</div><div class="actions"><button class="action" id="saveTop">💾<small>Save</small></button><button class="action" id="clearTop">🗑️<small>Clear</small></button></div></div></header>
+<header><div class="head"><div class="brand">Passenger Counts</div><div class="actions"><button class="action" id="saveTop">💾<small>Save</small></button><button class="action" id="clearTop">🗑️<small>Clear</small></button><button class="action" id="installApp" style="display:none">⬇️<small>Install</small></button></div></div></header>
 <div class="tabs"><button class="tab active" id="countTab">👥<br>Count</button><button class="tab" id="savedTab">☷<br>Saved</button></div>
 
 <section id="countView">
@@ -116,4 +116,27 @@ $('saveTop').onclick=save;$('saveBottom').onclick=save;$('clearTop').onclick=cle
 function tab(which){let count=which==='count';$('countView').classList.toggle('hidden',!count);$('savedView').classList.toggle('hidden',count);$('countTab').classList.toggle('active',count);$('savedTab').classList.toggle('active',!count);if(!count)history()}
 $('countTab').onclick=()=>tab('count');$('savedTab').onclick=()=>tab('saved');
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');render();history();
+
+const installBtn=$('installApp');
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',(event)=>{
+  event.preventDefault();
+  deferredInstallPrompt=event;
+  installBtn.style.display='flex';
+});
+installBtn.addEventListener('click',async()=>{
+  if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt=null;
+    installBtn.style.display='none';
+  }else{
+    alert('To install on iPhone or iPad: tap Share, then choose “Add to Home Screen”. On Android/Chrome, use the browser menu and choose “Install app”.');
+  }
+});
+window.addEventListener('appinstalled',()=>{
+  $('message').textContent='✓ Passenger Counts installed on this device';
+  installBtn.style.display='none';
+});
+
 </script></body></html>
