@@ -32,7 +32,61 @@ header{background:linear-gradient(135deg,#dc201f,#ae1015);color:white;padding:14
       .train{transform:scale(.78) skewX(-5deg);transform-origin:bottom right;right:-22px;bottom:8px}
       .tabs{margin:8px 10px}.tab{padding:9px 4px}
     }
-    </style>
+    
+/* Compact single-screen mobile layout */
+.app{height:100dvh;min-height:100dvh;overflow:hidden}
+header{padding:8px 12px 7px}
+.brand{font-size:23px}
+.actions{gap:6px}
+.action{width:48px;height:48px;border-radius:11px;font-size:19px}
+.action small{font-size:9px}
+.tabs{margin:6px 10px;padding:3px;border-radius:12px}
+.tab{padding:6px 4px;font-size:12px}
+.hero{height:88px;border-bottom-width:3px}
+.clock{transform:scale(.43)!important;transform-origin:top left;top:5px!important;left:5px!important}
+.train{transform:scale(.48) skewX(-5deg)!important;transform-origin:bottom right;right:-55px!important;bottom:0!important}
+.c1,.c2{display:none}
+.page{padding:7px 10px!important;width:100%}
+.journey-fields{grid-template-columns:1fr 1fr!important;gap:7px!important;margin-bottom:7px!important}
+.journey-fields label,.page label{font-size:12px!important;margin-bottom:3px!important}
+.journey-fields input{padding:7px!important;font-size:14px!important;border-radius:9px!important}
+#station{font-size:13px!important}
+#station::placeholder{font-size:12px}
+#station+*{}
+select#setType{padding:7px!important;font-size:14px!important;border-radius:9px!important}
+.page>div[style*="margin-bottom:14px"]{margin-bottom:7px!important}
+.fields{gap:7px!important;width:100%!important}
+.field{padding:7px 9px!important;border-radius:12px!important;width:100%!important}
+.field-title{font-size:14px!important}
+.seat{font-size:17px!important}
+.value{height:43px!important;margin:4px 0!important;border-radius:8px!important;font-size:28px!important}
+.controls{gap:7px!important}
+.controls button{width:38px!important;height:38px!important;font-size:25px!important}
+.total{margin-top:7px!important;padding:7px!important;border-radius:12px!important}
+.total-title{font-size:14px!important}
+.total-value{font-size:31px!important;line-height:1.05}
+.load-info{font-size:10px!important;margin-top:0!important}
+.notes{margin-top:7px!important;padding:7px!important;border-radius:12px!important}
+.notes label{font-size:13px!important;margin-bottom:4px!important}
+.notes textarea{height:42px!important;min-height:42px!important;padding:7px!important;font-size:12px!important;border-radius:8px!important}
+.savebar{margin-top:7px!important;padding:10px!important;border-radius:11px!important;font-size:15px!important}
+.message{display:none}
+.footer{display:none}
+#savedView .page{max-height:calc(100dvh - 110px);overflow:auto}
+@media(max-width:420px){
+ .head{align-items:center}
+ .journey-fields{grid-template-columns:1fr 1fr!important}
+}
+@media(max-height:700px){
+ .hero{height:58px}
+ .field{padding:5px 8px!important}
+ .value{height:38px!important}
+ .controls button{width:34px!important;height:34px!important}
+ .notes textarea{height:34px!important;min-height:34px!important}
+ .savebar{padding:8px!important}
+}
+
+</style>
 </head>
 <body><div class="app">
 <header><div class="head"><div class="brand">Passenger Counts</div><div class="actions"><button class="action" id="saveTop">💾<small>Save</small></button><button class="action" id="clearTop">🗑️<small>Clear</small></button></div></div></header>
