@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#c91518">
+<link rel="manifest" href="manifest.json">
+<title>Passenger Counts</title>
+<style>
+:root{--red:#c91518;--deep:#10202b;--cream:#f7f3e8;--green:#15863f;--line:#d8dde0}
+*{box-sizing:border-box}body{margin:0;background:#222;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#14202a}
+.app{max-width:600px;margin:auto;min-height:100vh;background:var(--cream)}
+header{background:linear-gradient(135deg,#dc201f,#ae1015);color:white;padding:14px 18px 12px;box-shadow:0 2px 8px #0004}
+.head{display:flex;align-items:center;justify-content:space-between}.brand{font-size:29px;font-weight:900;letter-spacing:-1.5px}.actions{display:flex;gap:9px}
+.action{width:60px;height:60px;border:0;border-radius:13px;background:#fff;color:var(--deep);font-size:25px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;cursor:pointer}.action small{font-size:11px;margin-top:2px}
+.tabs{display:flex;background:#e5e7e8;margin:10px 12px;border-radius:16px;padding:5px;gap:5px}.tab{flex:1;border:0;background:transparent;padding:12px 5px;border-radius:12px;font-size:15px;font-weight:850;color:#26323a;cursor:pointer}.tab.active{background:var(--red);color:white}
+.hero{height:210px;position:relative;overflow:hidden;background:linear-gradient(#47849a 0%,#8bb8c4 48%,#f8df91 49%,#f7f1df 100%);border-bottom:6px solid #fff}
+.cloud{position:absolute;background:#fff7d8;border-radius:50px;opacity:.9}.c1{width:150px;height:35px;top:30px;right:25px}.c2{width:100px;height:25px;top:72px;right:130px}
+.clock{position:absolute;width:155px;height:155px;top:18px;left:18px;border:10px solid #10202b;border-radius:50%;background:#fff8dc;box-shadow:0 0 0 4px #f2c83d}.clock:before,.clock:after{content:"";position:absolute;left:50%;top:50%;background:#10202b;transform-origin:left center;border-radius:4px}.clock:before{width:47px;height:7px;transform:rotate(30deg)}.clock:after{width:39px;height:7px;transform:rotate(215deg)}
+.train{position:absolute;right:18px;bottom:15px;width:350px;height:108px;background:linear-gradient(90deg,#f2f0df 0 44%,#d71918 44% 58%,#f5c633 58%);border-radius:55px 85px 25px 20px;transform:skewX(-5deg);box-shadow:0 10px 0 #172732}.train:after{content:"";position:absolute;right:22px;top:18px;width:75px;height:48px;background:#173342;border-radius:35px 35px 18px 18px}.train:before{content:"";position:absolute;left:35px;top:35px;width:120px;height:25px;background:repeating-linear-gradient(90deg,#10202b 0 10px,transparent 10px 16px)}
+.page{padding:14px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{border-radius:18px;padding:12px;color:white}.first{background:linear-gradient(135deg,#b51a1e,#851014)}.standard{background:linear-gradient(135deg,#273843,#13212a)}
+.field-title{font-size:18px;font-weight:900;text-align:center}.count-input{border:0;text-align:center;outline:none;font-family:inherit}.count-input:focus{box-shadow:0 0 0 3px #f5c633}.seat{font-size:25px;margin-right:7px}.value{height:76px;margin:8px 0;background:#fff;color:#17212a;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900}.controls{display:flex;justify-content:space-between;gap:10px}.controls button{width:58px;height:58px;border-radius:50%;border:0;color:white;font-size:34px;font-weight:700;cursor:pointer}.minus{background:#e52328}.plus{background:#159142}
+.total{margin-top:13px;border-radius:18px;background:linear-gradient(135deg,#eef0f1,#dfe4e7);padding:12px;text-align:center}.total-title{font-size:19px;font-weight:850}.total-value{font-size:56px;font-weight:950;transition:color .2s ease}.load-low{color:#15863f}.load-medium{color:#d98900}.load-high{color:#d71918}.load-info{font-size:13px;font-weight:800;color:#5d6971;margin-top:-4px}
+.notes{margin-top:14px;border-radius:18px;background:var(--deep);padding:12px}.notes label{display:block;color:white;font-weight:850;font-size:18px;margin-bottom:9px}.notes textarea{width:100%;height:105px;border-radius:12px;border:1px solid #b8c0c4;padding:12px;font:inherit;resize:none}
+.savebar{margin-top:14px;width:100%;border:0;background:var(--red);color:white;border-radius:15px;padding:16px;font-size:18px;font-weight:900;cursor:pointer}.message{text-align:center;color:#13723a;font-weight:800;font-size:13px;min-height:18px;padding-top:8px}
+.saved-title{font-size:25px;font-weight:950;margin:16px 0 10px}.record{background:#fff;border:1px solid #d5dbde;border-radius:15px;padding:13px;margin-bottom:10px}.record b{font-size:16px}.row{display:flex;justify-content:space-between;gap:8px;margin-top:7px;font-size:14px}.fc{color:#b0161b;font-weight:850}.std{color:#15863f;font-weight:850}.note{color:#53606a;font-size:13px;margin-top:6px}.footer{text-align:center;padding:22px;color:#b7191c;font-weight:950;font-size:22px}.hidden{display:none}
+</style>
+</head>
+<body><div class="app">
+<header><div class="head"><div class="brand">Passenger Counts</div><div class="actions"><button class="action" id="saveTop">💾<small>Save</small></button><button class="action" id="clearTop">🗑️<small>Clear</small></button></div></div></header>
+<div class="tabs"><button class="tab active" id="countTab">👥<br>Count</button><button class="tab" id="savedTab">☷<br>Saved</button></div>
+
+<section id="countView">
+<div class="hero"><div class="cloud c1"></div><div class="cloud c2"></div><div class="clock"></div><div class="train"></div></div>
+<div class="page">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+<div>
+<label for="headcode" style="display:block;font-size:17px;font-weight:900;margin:0 0 8px">🚆 Headcode</label>
+<input id="headcode" placeholder="e.g. 1V50" style="width:100%;border:1px solid #d8dde0;border-radius:14px;padding:14px;font-size:20px;font-weight:800;text-transform:uppercase">
+</div>
+<div>
+<label for="station" style="display:block;font-size:17px;font-weight:900;margin:0 0 8px">📍 Station</label>
+<input id="station" placeholder="e.g. Newcastle" style="width:100%;border:1px solid #d8dde0;border-radius:14px;padding:14px;font-size:16px;font-weight:700">
+</div>
+</div>
+<div style="margin-bottom:14px">
+<label for="setType" style="display:block;font-size:17px;font-weight:900;margin:0 0 8px">🚆 Formation</label>
+<select id="setType" style="width:100%;border:1px solid #d8dde0;border-radius:14px;padding:14px;font-size:18px;font-weight:800;background:white;color:#14202a">
+<option value="Single set">Single set</option>
+<option value="Double set (FRONT)">Double set (FRONT)</option>
+<option value="Double set (BACK)">Double set (BACK)</option>
+</select>
+</div>
+<div class="fields">
+<div class="field first"><div class="field-title"><span class="seat">♔</span>First Class</div><input class="value count-input" id="first" type="number" inputmode="numeric" min="0" value="0" aria-label="First Class passenger count"><div class="controls"><button class="minus" data-k="first" data-d="-1">−</button><button class="plus" data-k="first" data-d="1">+</button></div></div>
+<div class="field standard"><div class="field-title"><span class="seat">♟</span>Standard</div><input class="value count-input" id="standard" type="number" inputmode="numeric" min="0" value="0" aria-label="Standard passenger count"><div class="controls"><button class="minus" data-k="standard" data-d="-1">−</button><button class="plus" data-k="standard" data-d="1">+</button></div></div>
+</div>
+<div class="total"><div class="total-title">👥 Total Passengers</div><div class="total-value load-low" id="total">0</div><div class="load-info" id="loadInfo">0% of Class 220 seating capacity</div></div>
+<div class="notes"><label for="notes">▤ &nbsp;Notes</label><textarea id="notes" placeholder="Add notes here…"></textarea></div>
+<button class="savebar" id="saveBottom">Save Passenger Count</button><div class="message" id="message"></div>
+</div></section>
+
+<section id="savedView" class="hidden"><div class="page"><div class="saved-title">Saved Passenger Counts</div><div id="history"></div></div></section>
+
+</div>
+<script>
+const state={first:0,standard:0};const $=x=>document.getElementById(x);
+const CLASS220_CAPACITY=200;
+function updateTotal(){const total=state.first+state.standard;const pct=Math.round((total/CLASS220_CAPACITY)*100);const el=$('total');el.textContent=total;el.classList.remove('load-low','load-medium','load-high');if(pct<60)el.classList.add('load-low');else if(pct<90)el.classList.add('load-medium');else el.classList.add('load-high');$('loadInfo').textContent=`${pct}% of Class 220 seating capacity`;}
+function render(){$('first').value=state.first;$('standard').value=state.standard;updateTotal()}
+function records(){return JSON.parse(localStorage.getItem('pc_v2')||'[]')}
+function save(){const now=new Date();let r={headcode:$('headcode').value.trim().toUpperCase(),station:$('station').value.trim(),setType:$('setType').value,first:state.first,standard:state.standard,total:state.first+state.standard,notes:$('notes').value.trim(),date:now.toLocaleString(),dateKey:now.toISOString().slice(0,10)};let a=records();a.unshift(r);localStorage.setItem('pc_v2',JSON.stringify(a));$('message').textContent='✓ Saved offline on this device';history()}
+function clearForm(){if(confirm('Clear the current count?')){state.first=state.standard=0;$('headcode').value='';$('station').value='';$('setType').value='Single set';$('notes').value='';$('message').textContent='Current count cleared';render()}}
+function history(){
+let a=records(),h=$('history');
+if(!a.length){h.innerHTML='<div class="record">No saved passenger counts yet.</div>';return}
+const groups=new Map();
+a.forEach(r=>{
+  const day=r.dateKey || String(r.date||'').replace(/,.*/, '');
+  const head=(r.headcode||'NO HEADC0DE').trim().toUpperCase();
+  const key=day+'|'+head;
+  if(!groups.has(key)) groups.set(key,{day,head,items:[]});
+  groups.get(key).items.push(r);
+});
+h.innerHTML=[...groups.values()].map(g=>{
+  const totalFirst=g.items.reduce((n,r)=>n+(Number(r.first)||0),0);
+  const totalStandard=g.items.reduce((n,r)=>n+(Number(r.standard)||0),0);
+  const totalPassengers=g.items.reduce((n,r)=>n+(Number(r.total)||0),0);
+  const dateLabel=g.items[0].dateKey
+    ? new Date(g.items[0].dateKey+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short',year:'numeric'})
+    : String(g.items[0].date||'').replace(/,.*/, '');
+  return `<div class="record" style="border:2px solid #c91518">
+    <b>🚆 ${g.head}</b>
+    <div class="note" style="font-weight:800;margin:5px 0 10px">${dateLabel} • ${g.items.length} count${g.items.length===1?'':'s'}</div>
+    <div class="row" style="padding:9px;border-radius:10px;background:#f2f4f5">
+      <span>First Class: <span class="fc">${totalFirst}</span></span>
+      <span>Standard: <span class="std">${totalStandard}</span></span>
+      <span>Total: <b>${totalPassengers}</b></span>
+    </div>
+    <div style="margin-top:10px">
+      ${g.items.map(r=>`<div style="padding:9px 0;border-top:1px solid #e1e5e7">
+        <div class="row">
+          <span><b>${r.station ? '📍 '+r.station : '📍 Station not entered'}</b><div class="note">🚆 ${r.setType || 'Single set'}</div></span>
+          <span>First: <span class="fc">${r.first}</span> • Standard: <span class="std">${r.standard}</span> • Total: <b>${r.total}</b></span>
+        </div>
+        ${r.notes?`<div class="note">Notes: ${r.notes}</div>`:''}
+      </div>`).join('')}
+    </div>
+  </div>`;
+}).join('');
+}
+document.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{let k=b.dataset.k;state[k]=Math.max(0,state[k]+Number(b.dataset.d));render()});
+['first','standard'].forEach(k=>$(k).addEventListener('input',()=>{let n=parseInt($(k).value,10);state[k]=Number.isFinite(n)&&n>=0?n:0;updateTotal();}));
+['first','standard'].forEach(k=>$(k).addEventListener('blur',()=>{if($(k).value==='')state[k]=0;render();}));
+$('saveTop').onclick=save;$('saveBottom').onclick=save;$('clearTop').onclick=clearForm;
+function tab(which){let count=which==='count';$('countView').classList.toggle('hidden',!count);$('savedView').classList.toggle('hidden',count);$('countTab').classList.toggle('active',count);$('savedTab').classList.toggle('active',!count);if(!count)history()}
+$('countTab').onclick=()=>tab('count');$('savedTab').onclick=()=>tab('saved');
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');render();history();
+</script></body></html>
