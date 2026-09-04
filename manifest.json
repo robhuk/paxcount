@@ -1,19 +1,25 @@
 {
   "name": "Passenger Counts",
-  "short_name": "Counts",
+  "short_name": "Passenger Counts",
   "description": "Offline passenger counting for train services.",
   "id": "./",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f7f3e8",
-  "theme_color": "#c91518",
+  "background_color": "#0a1722",
+  "theme_color": "#d10b0b",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
